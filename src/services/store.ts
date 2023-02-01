@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 
 export const store = reactive({
-  isLoggedIn: false,
-  userName: "",
+  isLoggedIn: true,
+  userName: "ebarber",
 });

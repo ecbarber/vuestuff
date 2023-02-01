@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import TextBox from "./textbox.vue";
+import textbox from "./textbox.vue";
 import FormValidate from "./FormValidate.vue";
 import type { iLogin, iLoginResponse } from "../../interfaces/login";
 import { loginUser } from "../../services/loginService";
@@ -68,14 +68,14 @@ function handleSubmit(event: Event) {
         <div class="row">
           <div class="col-md-3"></div>
           <div class="col-md-6">
-            <TextBox
+            <textbox
               input-type="password"
               id="txtPassword"
               place-holder="Enter Password..."
               v-model="loginModel.passWord"
               :required="true"
               min-length="8"
-            ></TextBox>
+            ></textbox>
           </div>
         </div>
         <div class="row mt-4 mb-4">

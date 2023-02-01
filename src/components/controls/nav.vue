@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, defineExpose } from "vue";
 import { store } from "../../services/store";
 import { logOutUser } from "../../services/loginService";
 import router from "../../router/index";
@@ -11,7 +10,7 @@ const logOut = function () {
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Vue Stuff</a>
+      <a class="navbar-brand" href="/">SR Incident Reports</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -29,7 +28,32 @@ const logOut = function () {
             <RouterLink to="/" class="nav-link">Home</RouterLink>
           </li>
           <li class="nav-item" v-if="store.isLoggedIn">
-            <RouterLink to="/about" class="nav-link">About</RouterLink>
+            <RouterLink to="/incidents" class="nav-link">Incidents</RouterLink>
+          </li>
+          <li class="nav-item" v-if="store.isLoggedIn">
+            <RouterLink to="/editincident" class="nav-link"
+              >Edit Incident</RouterLink
+            >
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Admin
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="/admin/managelocations"
+                  >Manage Locations</a
+                >
+              </li>
+              <li><a class="dropdown-item" href="#">Another action</a></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
-import HelloWorld from "./components/HelloWorld.vue";
 import Nav from "./components/controls/nav.vue";
 </script>
 
@@ -8,9 +7,13 @@ import Nav from "./components/controls/nav.vue";
   <div class="container-fluid">
     <Nav></Nav>
   </div>
-  <div class="container d-flex align-items-center">
+  <div class="container-fluid">
     <RouterView />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+body {
+  background-color: #000;
+}
+</style>
