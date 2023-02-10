@@ -10,11 +10,17 @@ export function loginUser(model: iLogin): iLoginResponse {
     message: "",
   };
 
-  if (model.userName == "ebarber" && model.passWord == "Testing123!") {
+  if (model.passWord == "Testing123!") {
     response.success = true;
     response.message = "Login successful!";
     store.isLoggedIn = true;
     store.userName = model.userName;
+    if (
+      model.userName.toLowerCase() == "admin" ||
+      model.userName.toLowerCase() == "ebarber"
+    ) {
+      store.isAdmin = true;
+    }
   } else {
     response.success = false;
     response.message = "Login failed!";

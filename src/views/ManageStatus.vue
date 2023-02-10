@@ -1,93 +1,89 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import type { tLocation } from "../models/tLocation";
+import type { tStatus } from "../models/tStatus";
 import FormValidate from "../components/controls/FormValidate.vue";
 import {
-  getAllLocations,
-  getLocation,
-  createLocation,
-  updateLocation,
-} from "../services/locationService";
+  getStatusList,
+  getStatus,
+  createStatus,
+  updateStatus,
+} from "../services/statusService";
 
-const locations = ref<Array<tLocation>>();
+const itemList = ref<Array<tStatus>>();
 
-//const filteredLocations = ref<Array<tLocation>>();
-const filteredLocations = computed(() => {
+const filteredItems = computed(() => {
   const qry: string = filterString.value.toString();
-  return filterItems(locations.value, qry);
+  return filterItems(itemList.value, qry);
 });
 
 let enableCancel = ref<boolean>(false);
 let loading = ref<boolean>(false);
-let newItem = ref<boolean>(false);
+let isNewItem = ref<boolean>(false);
 let filterString = ref<String>("");
 
-const newLocation: tLocation = {
+const newItem: tStatus = {
   _id: "",
   name: "",
   is_deleted: false,
 };
 
-let location = ref<tLocation>(newLocation);
+let item = ref<tStatus>(newItem);
 const editpage = ref();
 
 onMounted(() => {
-  getLocations();
+  getAllItems();
 });
 
-function getALocation(id: String | undefined) {
+function getAnItem(id: String | undefined) {
   loading.value = true;
-  getLocation(id).then((result) => {
-    location.value = result.DATA;
+  getStatus(id).then((result) => {
+    item.value = result.DATA;
     enableCancel.value = true;
   });
   loading.value = false;
 }
 
-function getLocations() {
+function getAllItems() {
   loading.value = true;
-  getAllLocations().then((result) => {
-    locations.value = result.DATA;
+  getStatusList().then((result) => {
+    itemList.value = result.DATA;
   });
   loading.value = false;
 }
 
 function cancelEdit() {
-  location.value._id = "";
-  location.value.name = "";
-  location.value.is_deleted = false;
+  item.value._id = "";
+  item.value.name = "";
+  item.value.is_deleted = false;
   enableCancel.value = false;
-  newItem.value = false;
+  isNewItem.value = false;
 }
 
 function newUnit() {
-  console.log("Entering NEW ITEM mode...");
-  let location = ref<tLocation>(newLocation);
-  newItem.value = true;
+  let sev = ref<tStatus>(newItem);
+  isNewItem.value = true;
   enableCancel.value = true;
 }
 
 function handleSubmit(event: Event) {
   if (editpage.value.validatepage()) {
-    if (location.value._id == "") {
-      createLocation(location.value).then((response) => {
+    if (item.value._id == "") {
+      createStatus(item.value).then((response) => {
         cancelEdit();
-        getLocations();
+        getAllItems();
       });
     } else {
-      var data = updateLocation(location.value._id, location.value).then(
-        (response) => {
-          cancelEdit();
-          getLocations();
-        }
-      );
+      var data = updateStatus(item.value._id, item.value).then((response) => {
+        cancelEdit();
+        getAllItems();
+      });
 
       console.log("update response: ", data);
     }
   }
 }
 
-function filterItems(arr: tLocation[] | undefined, query: string) {
+function filterItems(arr: tStatus[] | undefined, query: string) {
   return arr?.filter((el) =>
     el.name.toLowerCase().includes(query.toLowerCase())
   );
@@ -110,7 +106,7 @@ function clearFilter() {
       <div class="col-md-8 col-sm-9 border">
         <div class="row align-items-center">
           <div class="col-4 mt-2">
-            <label class="control-label float-end">Filter Locations:</label>
+            <label class="control-label float-end">Filter Items:</label>
           </div>
           <div class="col-5 mt-2">
             <input class="form-control" type="text" v-model="filterString" />
@@ -127,11 +123,11 @@ function clearFilter() {
         <div class="row mt-3">
           <div
             class="col-md-3 col-sm-12 d-grid gap-2"
-            v-for="itm in filteredLocations"
+            v-for="itm in filteredItems"
           >
             <button
               class="btn btn-outline-success btn-lg mt-1"
-              @click="getALocation(itm._id)"
+              @click="getAnItem(itm._id)"
             >
               {{ itm.name }}
             </button>
@@ -144,7 +140,7 @@ function clearFilter() {
           <template #body>
             <div class="row align-items-center">
               <div class="col">
-                <h4>Edit Location</h4>
+                <h4>Edit Status List</h4>
               </div>
               <div class="col">
                 <button
@@ -152,19 +148,19 @@ function clearFilter() {
                   :disabled="enableCancel"
                   @click.prevent="newUnit"
                 >
-                  New Location
+                  New Status Item
                 </button>
               </div>
             </div>
             <div class="row">
               <div class="col">
-                <label class="form-label">Location Id</label>
+                <label class="form-label">Status Id</label>
                 <input
                   type="text"
                   class="form-control"
                   placeholder="Location Id"
                   aria-label="Location Id"
-                  v-model="location._id"
+                  v-model="item._id"
                   required
                   disabled
                 />
@@ -172,15 +168,15 @@ function clearFilter() {
             </div>
             <div class="row">
               <div class="col">
-                <label class="form-label">Location Name</label>
+                <label class="form-label">Status Description</label>
                 <input
                   type="text"
                   class="form-control"
                   placeholder="Location Name"
                   aria-label="Location Name"
-                  v-model="location.name"
+                  v-model="item.name"
                   required
-                  :disabled="!newItem && !enableCancel"
+                  :disabled="!isNewItem && !enableCancel"
                 />
               </div>
             </div>
@@ -192,7 +188,7 @@ function clearFilter() {
                     type="checkbox"
                     value=""
                     id="flexCheckDefault"
-                    v-model="location.is_deleted"
+                    v-model="item.is_deleted"
                     :disabled="!newItem && !enableCancel"
                   />
                   <label class="form-check-label" for="flexCheckDefault">

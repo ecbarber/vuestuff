@@ -1,3 +1,5 @@
+import type { tPerson } from "../models/tPerson";
+
 export type tIncidentReport = {
   _id?: String;
   location: String;
@@ -12,4 +14,6 @@ export type tIncidentReport = {
   specific_location: String;
   incident_date: String;
   is_deleted?: Boolean;
+  incident_description: String;
+  persons?: [tPerson];
 };

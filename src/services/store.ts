@@ -1,6 +1,7 @@
 import { reactive } from "vue";
-
 export const store = reactive({
-  isLoggedIn: true,
-  userName: "ebarber",
+  isLoggedIn: false,
+  userName: "",
+  apiUrl: "http://localhost:3000/api",
+  isAdmin: false,
 });

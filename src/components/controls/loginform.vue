@@ -16,7 +16,7 @@ const props = defineProps({
   },
   class: {
     type: String,
-    default: "container",
+    default: "container border",
   },
 });
 
@@ -33,7 +33,6 @@ let response: iLoginResponse = {
 };
 
 function handleSubmit(event: Event) {
-  console.log("submit clicked");
   if (loginpage.value.validatepage()) {
     response = loginUser(loginModel.value);
     if (response.success) {
@@ -48,20 +47,20 @@ function handleSubmit(event: Event) {
       <div :class="class">
         <div class="row mt-3">
           <div class="col d-flex justify-content-center">
-            <h1>{{ Title }}</h1>
+            <h3>{{ Title }}</h3>
           </div>
         </div>
         <div class="row">
           <div class="col-md-3"></div>
           <div class="col-md-6">
-            <TextBox
+            <textbox
               input-type="text"
               id="txtUserName"
               place-holder="Enter User Name..."
               v-model="loginModel.userName"
               :required="true"
-              min-length="6"
-            ></TextBox>
+              min-length="4"
+            ></textbox>
           </div>
           <div class="col-md-3"></div>
         </div>

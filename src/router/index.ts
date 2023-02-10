@@ -4,6 +4,8 @@ import { store } from "../services/store";
 import EditIncidentView from "../views/EditIncidentView.vue";
 import IncidentReportsView from "../views/IncidentReportsView.vue";
 import ManageLocationsView from "../views/ManageLocations.vue";
+import ManageSeverityView from "../views/ManageSeverity.vue";
+import ManageStatusView from "../views/ManageStatus.vue";
 import LoginView from "../views/LoginView.vue";
 
 const router = createRouter({
@@ -35,20 +37,30 @@ const router = createRouter({
       component: ManageLocationsView,
     },
     {
+      path: "/admin/manageseverity",
+      name: "manageseverity",
+      component: ManageSeverityView,
+    },
+    {
+      path: "/admin/managestatus",
+      name: "managestatus",
+      component: ManageStatusView,
+    },
+    {
       path: "/:catchAll(.*)",
       component: NotFound,
     },
   ],
 });
 
-// router.beforeEach(async (to) => {
-//   // redirect to login page if not logged in and trying to access a restricted page
-//   const publicPages = ["/login"];
-//   const authRequired = !publicPages.includes(to.path);
+router.beforeEach(async (to) => {
+  // redirect to login page if not logged in and trying to access a restricted page
+  const publicPages = ["/login"];
+  const authRequired = !publicPages.includes(to.path);
 
-//   if (authRequired && !store.isLoggedIn) {
-//     return "/login";
-//   }
-// });
+  if (authRequired && !store.isLoggedIn) {
+    return "/login";
+  }
+});
 
 export default router;

@@ -2,6 +2,7 @@
 import { store } from "../../services/store";
 import { logOutUser } from "../../services/loginService";
 import router from "../../router/index";
+
 const logOut = function () {
   logOutUser();
   router.push("/login");
@@ -25,17 +26,16 @@ const logOut = function () {
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item" v-if="store.isLoggedIn">
-            <RouterLink to="/" class="nav-link">Home</RouterLink>
-          </li>
-          <li class="nav-item" v-if="store.isLoggedIn">
-            <RouterLink to="/incidents" class="nav-link">Incidents</RouterLink>
-          </li>
-          <li class="nav-item" v-if="store.isLoggedIn">
-            <RouterLink to="/editincident" class="nav-link"
-              >Edit Incident</RouterLink
+            <RouterLink to="/incidents" class="nav-link"
+              >Current Incidents</RouterLink
             >
           </li>
-          <li class="nav-item dropdown">
+          <li class="nav-item" v-if="store.isLoggedIn">
+            <RouterLink to="/incidents" class="nav-link"
+              >All Incidents</RouterLink
+            >
+          </li>
+          <li class="nav-item dropdown" v-if="store.isAdmin">
             <a
               class="nav-link dropdown-toggle"
               href="#"
@@ -51,8 +51,16 @@ const logOut = function () {
                   >Manage Locations</a
                 >
               </li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
+              <li>
+                <a class="dropdown-item" href="/admin/manageseverity"
+                  >Manage Severity List</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item" href="/admin/managestatus"
+                  >Manage Status List</a
+                >
+              </li>
             </ul>
           </li>
         </ul>
