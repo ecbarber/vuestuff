@@ -47,18 +47,18 @@ const logOut = function () {
             </a>
             <ul class="dropdown-menu">
               <li>
-                <a class="dropdown-item" href="/admin/managelocations"
-                  >Manage Locations</a
+                <RouterLink to="/admin/managelocations" class="dropdown-item"
+                  >Manage Locations</RouterLink
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="/admin/manageseverity"
-                  >Manage Severity List</a
+                <RouterLink to="/admin/manageseverity" class="dropdown-item"
+                  >Manage Severity List</RouterLink
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="/admin/managestatus"
-                  >Manage Status List</a
+                <RouterLink to="/admin/managestatus" class="dropdown-item"
+                  >Manage Status List</RouterLink
                 >
               </li>
             </ul>

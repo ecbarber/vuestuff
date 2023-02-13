@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import textbox from "./textbox.vue";
 import FormValidate from "./FormValidate.vue";
 import type { iLogin, iLoginResponse } from "../../interfaces/login";

@@ -8,6 +8,8 @@ import type { tSeverity } from "@/models/tSeverity";
 import { useRoute } from "vue-router";
 import router from "../router/index";
 import FormValidate from "../components/controls/FormValidate.vue";
+import PersonEditor from "@/components/controls/PersonEditor.vue";
+
 import {
   getIncident,
   createIncident,
@@ -24,6 +26,8 @@ const editpage = ref();
 const locations = ref<Array<tLocation>>();
 const statusList = ref<Array<tStatus>>();
 const severityList = ref<Array<tSeverity>>();
+const witnessControl = ref();
+const injuredControl = ref();
 
 const newIncident: tIncidentReport = {
   _id: "",
@@ -259,26 +263,12 @@ onMounted(() => {
           </div>
           <div class="row mt-3">
             <div class="col">
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Class</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="itm in incident.persons">
-                    <td>{{ itm.last_name }}</td>
-                    <td>{{ itm.first_name }}</td>
-                    <td>{{ itm.email }}</td>
-                    <td>{{ itm.phone_number }}</td>
-                    <td>{{ itm.person_class }}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <PersonEditor
+                v-bind:persons-list="incident.persons"
+                newButtonText="New Human"
+                titleText="Person Editor"
+                ref="personEditor"
+              ></PersonEditor>
             </div>
           </div>
           <div class="row mt-3 justify-content-center">
