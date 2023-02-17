@@ -4,6 +4,7 @@ import Nav from "./components/controls/nav.vue";
 import router from "./router";
 
 const showNav = ref<boolean>();
+
 watch(router.currentRoute, () => {
   showNav.value =
     router.currentRoute.value.name != "editincident" &&

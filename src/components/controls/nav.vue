@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { store } from "../../services/store";
 import { logOutUser } from "../../services/loginService";
 import router from "../../router/index";
+import { ref } from "vue";
 
 const logOut = function () {
   logOutUser();
   router.push("/login");
 };
+
+var isLoggedIn = ref<boolean>(localStorage.getItem("isLoggedIn") == "true");
+var isAdmin = ref<boolean>(localStorage.getItem("isAdmin") == "true");
+var userName = ref<string>(localStorage.getItem("userName") ?? "");
 </script>
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -25,17 +29,17 @@ const logOut = function () {
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item" v-if="store.isLoggedIn">
+          <li class="nav-item" v-if="isLoggedIn">
             <RouterLink to="/incidents" class="nav-link"
               >Current Incidents</RouterLink
             >
           </li>
-          <li class="nav-item" v-if="store.isLoggedIn">
+          <li class="nav-item" v-if="isLoggedIn">
             <RouterLink to="/incidents" class="nav-link"
               >All Incidents</RouterLink
             >
           </li>
-          <li class="nav-item dropdown" v-if="store.isAdmin">
+          <li class="nav-item dropdown" v-if="isAdmin">
             <a
               class="nav-link dropdown-toggle"
               href="#"
@@ -61,17 +65,22 @@ const logOut = function () {
                   >Manage Status List</RouterLink
                 >
               </li>
+              <li>
+                <RouterLink to="/admin/managepersonclass" class="dropdown-item"
+                  >Manage Person Classes</RouterLink
+                >
+              </li>
             </ul>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <span class="navbar-text" v-if="store.isLoggedIn"
-            >Welcome "{{ store.userName }}"</span
+          <span class="navbar-text" v-if="isLoggedIn"
+            >Welcome "{{ userName }}"</span
           >
-          <li class="nav-item" v-if="store.isLoggedIn">
+          <li class="nav-item" v-if="isLoggedIn">
             <a href="#" class="nav-link" @click="logOut">Log Out</a>
           </li>
-          <li class="nav-item" v-if="!store.isLoggedIn">
+          <li class="nav-item" v-if="!isLoggedIn">
             <RouterLink to="/login" class="nav-link">Log In</RouterLink>
           </li>
         </ul>

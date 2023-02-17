@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
+
+const props = defineProps({
+  containerClass: { type: String, default: "modal-container" },
+});
 const show = ref();
 
 defineExpose({ showMe });
 
 function showMe(showHide: Boolean) {
-  console.log("hey show me!!!!");
   show.value = showHide;
 }
 </script>
@@ -13,7 +16,7 @@ function showMe(showHide: Boolean) {
   <Transition name="modal">
     <div v-if="show" class="modal-mask">
       <div class="modal-wrapper">
-        <div class="modal-container">
+        <div v-bind:class="containerClass">
           <div class="modal-header">
             <slot name="header">default header</slot>
           </div>
@@ -52,6 +55,16 @@ function showMe(showHide: Boolean) {
 
 .modal-container {
   width: 800px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  transition: all 0.3s ease;
+}
+
+.modal-container-sm {
+  width: 500px;
   margin: 0px auto;
   padding: 20px 30px;
   background-color: #fff;

@@ -10,4 +10,6 @@ export type tPerson = {
   lastupdated_by: String;
   lastupdated_date: String;
   is_deleted?: Boolean;
+  person_story: String;
+  secondary_person_classes: String[];
 };

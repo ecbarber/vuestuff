@@ -1,5 +1,5 @@
 import type { tIncidentReport } from "@/models/tIncidentReport";
-import IncidentReportsViewVue from "@/views/IncidentReportsView.vue";
+import type { tPerson } from "@/models/tPerson";
 import axios from "axios";
 import { store } from "../services/store";
 import dayjs from "dayjs";
@@ -37,8 +37,38 @@ export async function updateIncident(
   incident: tIncidentReport
 ): Promise<any> {
   let returnItem = {};
+  incident.lastupdated_by = store.userName;
+  incident.lastupdated_date = fixDate(new Date());
   await axios
     .put(`${store.apiUrl}/incident/${id}`, incident)
+    .then((response) => {
+      returnItem = response.data;
+    });
+  return returnItem;
+}
+
+export async function updatePerson(
+  incidentId: String | undefined,
+  person: tPerson
+): Promise<any> {
+  console.log("inside incident service, update person:", person);
+  let returnItem = {};
+  await axios
+    .put(`${store.apiUrl}/incident/${incidentId}/updateperson`, person)
+    .then((response) => {
+      returnItem = response.data;
+    });
+  return returnItem;
+}
+
+export async function createPerson(
+  incidentId: String | undefined,
+  person: tPerson
+): Promise<any> {
+  console.log("inside incident service, create person:", person);
+  let returnItem = {};
+  await axios
+    .post(`${store.apiUrl}/incident/${incidentId}/addperson`, person)
     .then((response) => {
       returnItem = response.data;
     });
