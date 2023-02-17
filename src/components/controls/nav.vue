@@ -70,6 +70,11 @@ var userName = ref<string>(localStorage.getItem("userName") ?? "");
                   >Manage Person Classes</RouterLink
                 >
               </li>
+              <li>
+                <RouterLink to="/admin/managepersonrole" class="dropdown-item"
+                  >Manage Person Roles</RouterLink
+                >
+              </li>
             </ul>
           </li>
         </ul>

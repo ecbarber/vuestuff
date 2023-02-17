@@ -14,47 +14,56 @@ import {
   createPerson,
   updatePerson,
 } from "../services/incidentService";
-
 import dayjs from "dayjs";
 
 const route = useRoute();
 const editpage = ref();
 const metaStore: MetaStore = new MetaStore();
-var currentUserName = reactive<String>(localStorage.getItem("userName") ?? "");
 
-const newIncident: tIncidentReport = {
-  _id: "",
-  location: "",
-  created_by: "",
-  created_date: "",
-  lastupdated_by: "",
-  lastupdated_date: "",
-  reporting_party: "",
-  reporting_party_email: "",
-  status: "",
-  severity: "",
-  specific_location: "",
-  is_deleted: false,
-  incident_date: "",
-  incident_description: "",
-};
-const incident = ref<tIncidentReport>(newIncident);
+console.log("start script setup");
 
+//var currentUserName = reactive<String>(localStorage.getItem("userName") ?? "");
+var isLoading = ref(true);
+var currentUserName = localStorage.getItem("userName") as String;
 var incidentId = route.params.id as String;
 let pageLabel = `Edit Incident (${incidentId})`;
+var incident: tIncidentReport;
 
 if (!incidentId) {
   pageLabel = "New Incident";
+  incident = reactive({
+    _id: "",
+    location: "",
+    created_by: "",
+    created_date: "",
+    lastupdated_by: "",
+    lastupdated_date: "",
+    reporting_party: "",
+    reporting_party_email: "",
+    status: "",
+    severity: "",
+    specific_location: "",
+    is_deleted: false,
+    incident_date: "",
+    incident_description: "",
+  });
+  isLoading.value = false;
+  console.log("THE INCIDENT: ", incident);
 } else {
-  getItem(incidentId);
-}
-
-function getItem(incidentId: String) {
-  getIncident(incidentId).then(function (response) {
-    let obj = response.DATA;
-    incident.value = fixDates(obj);
+  //getItem(incidentId);
+  getIncident(incidentId).then((response) => {
+    incident = reactive(response.DATA);
+    console.log("THE INCIDENT: ", incident);
+    isLoading.value = false;
   });
 }
+
+// function getItem(incidentId: String) {
+//   getIncident(incidentId).then(function (response) {
+//     let obj = response.DATA;
+//     incident = fixDates(obj);
+//   });
+// }
 
 function fixDates(inc: tIncidentReport) {
   inc.incident_date = dayjs(inc.incident_date.toString()).format(
@@ -70,23 +79,23 @@ function fixDates(inc: tIncidentReport) {
 }
 
 async function upDateIncident() {
-  incident.value.lastupdated_by = currentUserName;
-  incident.value.lastupdated_date = dayjs(new Date().toString()).format(
+  incident.lastupdated_by = currentUserName;
+  incident.lastupdated_date = dayjs(new Date().toString()).format(
     "YYYY-MM-DDTHH:mm"
   );
-  updateIncident(incidentId, incident.value);
+  updateIncident(incidentId, incident);
 }
 
 async function createNewIncident() {
-  incident.value.created_by = currentUserName;
-  incident.value.created_date = dayjs(new Date().toString()).format(
+  incident.created_by = currentUserName;
+  incident.created_date = dayjs(new Date().toString()).format(
     "YYYY-MM-DDTHH:mm"
   );
-  incident.value.lastupdated_by = currentUserName;
-  incident.value.lastupdated_date = dayjs(new Date().toString()).format(
+  incident.lastupdated_by = currentUserName;
+  incident.lastupdated_date = dayjs(new Date().toString()).format(
     "YYYY-MM-DDTHH:mm"
   );
-  createIncident(incident.value);
+  createIncident(incident);
 }
 
 function cancelEdit() {
@@ -146,7 +155,9 @@ async function handlePersonSubmit(incidentId: String, thePerson: tPerson) {
   }
 }
 
-onMounted(() => {});
+onMounted(() => {
+  console.log("on mounted");
+});
 </script>
 <template>
   <div class="row mt-3 mb-1 justify-content-center">
@@ -167,25 +178,23 @@ onMounted(() => {});
     </div>
   </div>
   <div class="row m-3 justify-content-center">
-    <div class="col-lg-8 col-md-12 border p-4">
+    <div class="col-lg-8 col-md-12 border p-4" v-if="!isLoading">
       <FormValidate ref="editpage">
         <template #body>
           <div class="row">
             <div class="col">
               <div class="form-floating">
                 <select
+                  required="true"
                   class="form-control"
                   placeholder="Location"
-                  aria-label="Location"
                   v-model="incident.location"
-                  required
-                  id="selLocation"
                 >
                   <option v-for="itm in metaStore.locationList">
                     {{ itm.name }}
                   </option>
                 </select>
-                <label class="form-label" for="selLocation"
+                <label class="form-label"
                   >Incident Location (Club or Facility)</label
                 >
               </div>
@@ -292,7 +301,6 @@ onMounted(() => {});
             <div class="col">
               <div class="form-floating mt-1">
                 <textarea
-                  type="text"
                   class="form-control"
                   placeholder="Description"
                   aria-label="Description"

@@ -25,6 +25,7 @@ const newPerson: tPerson = {
 };
 
 var currentPerson = reactive<tPerson>(newPerson);
+const personStory = ref("this is the story");
 
 const props = defineProps({
   titleText: {
