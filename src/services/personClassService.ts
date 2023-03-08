@@ -3,7 +3,6 @@ import axios from "axios";
 import { store } from "../services/store";
 
 export async function getItemList(): Promise<any> {
-  console.log("SERVICE getItemList");
   let returnList = {};
   await axios.get(`${store.apiUrl}/personclasses`).then((response) => {
     returnList = response.data;

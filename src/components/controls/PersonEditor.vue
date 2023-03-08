@@ -3,29 +3,46 @@ import { ref, reactive, computed, onMounted } from "vue";
 import NativeModal from "../controls/nativemodal.vue";
 import FormValidate from "./FormValidate.vue";
 import type { tPerson } from "../../models/tPerson";
+import { Person } from "../../models/tPerson";
 import { MetaStore } from "@/services/metaStore";
+import { store } from "../../services/store";
+import {
+  createPerson,
+  getIncidentPersons,
+  updatePerson,
+} from "../../services/incidentService";
+import dayjs from "dayjs";
+
 const editModal = ref();
 const editForm = ref();
 const confirmDeleteModal = ref();
-const metaStore = new MetaStore();
 
-const newPerson: tPerson = {
+const pageState = reactive({
+  personList: new Array<tPerson>(),
+  loadingList: new Boolean(),
+});
+
+pageState.loadingList = false;
+
+var currentPerson: tPerson = reactive({
   _id: "",
   first_name: "",
   last_name: "",
   email: "",
   phone_number: "",
   person_class: "",
+  person_class_other: "",
   created_by: "",
   created_date: "",
   lastupdated_by: "",
   lastupdated_date: "",
   person_story: "",
   secondary_person_classes: [],
-};
-
-var currentPerson = reactive<tPerson>(newPerson);
-const personStory = ref("this is the story");
+  treatment_type: "",
+  person_role: "",
+  person_role_other: "",
+  stage_name: "",
+});
 
 const props = defineProps({
   titleText: {
@@ -52,19 +69,22 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  personsList: Array<tPerson>,
 });
 
 const emit = defineEmits(["createPerson", "deletePerson", "updatePerson"]);
 
 const filteredPersonsList = computed(() => {
-  return props.personsList?.filter(function (el) {
+  return pageState.personList?.filter(function (el: tPerson) {
     return el.is_deleted == false;
   });
 });
 
-function showEdit(personInstance: Object | undefined) {
-  currentPerson = personInstance as tPerson;
+function showEdit(personInstance: tPerson | undefined) {
+  if (personInstance?._id) {
+    currentPerson = personInstance;
+  } else {
+    currentPerson = new Person();
+  }
   editModal.value.showMe(true);
 }
 
@@ -74,30 +94,50 @@ function confirmDelete(personInstance: Object | undefined) {
 }
 
 function handleDelete(event: Event) {
-  console.log("handle delete: ", currentPerson);
   currentPerson.is_deleted = true;
   emit("deletePerson", props.incidentId, currentPerson);
   confirmDeleteModal.value.showMe(false);
 }
 
-function createPerson(event: Event) {
-  if (editForm.value.validatepage()) {
-    emit("createPerson", props.incidentId, currentPerson);
-    editModal.value.showMe(false);
-  }
+function handleCreatePerson(incidentId: String, thePerson: tPerson) {
+  thePerson.created_by = store.fullName;
+  thePerson.created_date = dayjs(new Date().toString()).format(
+    "YYYY-MM-DDTHH:mm"
+  );
+  thePerson.lastupdated_by = store.fullName;
+  thePerson.lastupdated_date = dayjs(new Date().toString()).format(
+    "YYYY-MM-DDTHH:mm"
+  );
+
+  createPerson(incidentId, thePerson).then(() => {
+    refreshList();
+  });
 }
 
-function updatePerson(event: Event) {
+function handleUpdatePerson(incidentId: String, thePerson: tPerson) {
+  thePerson.lastupdated_by = store.fullName;
+  thePerson.lastupdated_date = dayjs(new Date().toString()).format(
+    "YYYY-MM-DDTHH:mm"
+  );
+  updatePerson(incidentId, thePerson).then(() => {
+    refreshList();
+  });
+}
+
+async function savePerson(event: Event) {
   if (editForm.value.validatepage()) {
-    console.log("currentPerson._id: ", currentPerson._id);
-    emit("updatePerson", props.incidentId, currentPerson);
+    if (currentPerson._id) {
+      await handleUpdatePerson(props.incidentId, currentPerson);
+    } else {
+      await handleCreatePerson(props.incidentId, currentPerson);
+    }
     editModal.value.showMe(false);
   }
 }
 
 const showHideTable = computed(() => {
-  if (props.personsList) {
-    return props.personsList.length > 0;
+  if (pageState.personList) {
+    return pageState.personList.length > 0;
   } else {
     return false;
   }
@@ -110,6 +150,21 @@ function cancelEdit() {
 function cancelDelete() {
   confirmDeleteModal.value.showMe(false);
 }
+
+onMounted(() => {
+  refreshList();
+});
+
+async function refreshList() {
+  pageState.loadingList = true;
+  pageState.personList = [];
+  setTimeout(function () {
+    getIncidentPersons(props.incidentId).then((data) => {
+      pageState.personList = data.DATA;
+      pageState.loadingList = false;
+    });
+  }, 500);
+}
 </script>
 <template>
   <div class="border rounded-2 mt-2 p-2">
@@ -118,7 +173,10 @@ function cancelDelete() {
         <h4>{{ titleText }}</h4>
       </div>
       <div class="col d-flex align-items-middle justify-content-end">
-        <button class="btn btn-outline-danger" @click.prevent="showEdit">
+        <button
+          class="btn btn-outline-danger"
+          v-on:click.prevent="showEdit(new Person())"
+        >
           {{ newButtonText }}
         </button>
       </div>
@@ -130,6 +188,9 @@ function cancelDelete() {
     </div>
     <div class="row p-2">
       <div class="col align-items-middle">
+        <div class="alert alert-info" v-if="pageState.loadingList">
+          Loading incident persons...
+        </div>
         <table class="table table-bordered" v-if="showHideTable">
           <thead>
             <tr>
@@ -139,7 +200,7 @@ function cancelDelete() {
               <th>Email</th>
               <th>Phone</th>
               <th>Class</th>
-              <th></th>
+              <th>Role</th>
             </tr>
           </thead>
           <tbody>
@@ -154,6 +215,7 @@ function cancelDelete() {
               <td>{{ itm.email }}</td>
               <td>{{ itm.phone_number }}</td>
               <td>{{ itm.person_class }}</td>
+              <td>{{ itm.person_role }}</td>
               <td class="text-center">
                 <a class="text-danger" href="#" v-on:click="confirmDelete(itm)"
                   ><i class="bi bi-person-x"></i
@@ -285,37 +347,115 @@ function cancelDelete() {
               </div>
             </div>
 
+            <div class="row mt-1 border rounded ms-1 me-1 p-1">
+              <div class="col-1">
+                <strong class="ms-2 align-middle">Class:</strong>
+              </div>
+              <div class="col">
+                <div
+                  class="form-check form-check-inline"
+                  v-for="itm in MetaStore.personClassList"
+                >
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="classOptions"
+                    v-bind:value="itm.name"
+                    v-model="currentPerson.person_class"
+                  />
+                  <label class="form-check-label" for="inlineRadio1">{{
+                    itm.name
+                  }}</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-1" v-if="currentPerson.person_class == 'Other'">
+              <div class="col">
+                <div class="form-floating mt-1">
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="currentPerson.person_class_other"
+                  />
+                  <label class="form-label" for="selStatus">Other Class</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-1 border rounded ms-1 me-1 p-1">
+              <div class="col-1">
+                <strong class="ms-2 align-middle">Role:</strong>
+              </div>
+              <div class="col">
+                <div
+                  class="form-check form-check-inline"
+                  v-for="itm in MetaStore.personRoleList"
+                >
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="roleOptions"
+                    v-bind:value="itm.name"
+                    v-model="currentPerson.person_role"
+                  />
+                  <label class="form-check-label" for="inlineRadio1">{{
+                    itm.name
+                  }}</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-1" v-if="currentPerson.person_role == 'Other'">
+              <div class="col">
+                <div class="form-floating mt-1">
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="currentPerson.person_role_other"
+                  />
+                  <label class="form-label" for="selStatus">Other Role</label>
+                </div>
+              </div>
+            </div>
+
             <div class="row mt-1">
+              <div class="col">
+                <div
+                  class="form-floating mb-1"
+                  v-if="currentPerson.person_class == 'Entertainer'"
+                >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Stage Name"
+                    aria-label="Stage Name"
+                    v-model="currentPerson.stage_name"
+                    required
+                  />
+                  <label>Stage Name</label>
+                </div>
+              </div>
+            </div>
+            <div
+              class="row mt-1"
+              v-if="currentPerson.person_role == 'Injured Party'"
+            >
               <div class="col">
                 <div class="form-floating mb-1">
                   <select
                     class="form-control"
                     placeholder="Person Class"
                     aria-label="Person Class"
-                    v-model="currentPerson.person_class"
+                    v-model="currentPerson.treatment_type"
                     required
                     id="selPersonClass"
                   >
-                    <option v-for="itm in metaStore.personClassList">
+                    <option v-for="itm in MetaStore.treatmentTypeList">
                       {{ itm.name }}
                     </option>
                   </select>
-                  <label for="selPersonClass">Person Class</label>
-                </div>
-              </div>
-              <div class="col">
-                <div class="form-floating mb-1">
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="currentPerson._id"
-                    disabled
-                  />
-                  <label>Person Id</label>
+                  <label>Treatment Type</label>
                 </div>
               </div>
             </div>
-
             <div class="row mt-1">
               <div class="col">
                 <div class="form-floating mb-1">
@@ -343,7 +483,7 @@ function cancelDelete() {
       </button>
       <button
         class="btn btn-outline-primary m-1"
-        v-on:click.prevent="updatePerson"
+        v-on:click.prevent="savePerson($event)"
       >
         Submit
       </button>

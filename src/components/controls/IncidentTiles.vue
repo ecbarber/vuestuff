@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
-import type { tIncidentReport } from "../../models/tIncidentReport";
+import type { IncidentReport } from "../../models/IncidentReport";
 import router from "../../router/index";
 import dayjs from "dayjs";
 import { getAllLocations } from "../../services/locationService";
@@ -10,9 +10,10 @@ import { getStatusList } from "../../services/statusService";
 import type { tLocation } from "../../models/tLocation";
 import type { tStatus } from "@/models/tStatus";
 import type { tSeverity } from "@/models/tSeverity";
+import { store } from "../../services/store";
 
-const incidents = ref<Array<tIncidentReport>>();
-const sortedIncidents = ref<Array<tIncidentReport>>();
+var incidents: Array<IncidentReport>;
+const sortedIncidents = ref<Array<IncidentReport>>();
 const locations = ref<Array<tLocation>>();
 const statusList = ref<Array<tStatus>>();
 const severityList = ref<Array<tSeverity>>();
@@ -21,17 +22,35 @@ const locationFilter = ref();
 const statusFilter = ref();
 const severityFilter = ref();
 
+const listState = reactive({
+  showAll: false,
+  incidentLabel: `Showing Incidents for ${store.fullName}`,
+});
+listState.showAll = false;
+listState.incidentLabel = `Showing Incidents for ${store.fullName}`;
+
 var sortBy = ref("created_date");
 
+function filterIncidentsByCurrentUser() {
+  if (listState.showAll) {
+    listState.incidentLabel = "Showing All Incidents";
+  } else {
+    listState.incidentLabel = `Showing Incidents for ${store.fullName}`;
+  }
+  getIncidents();
+  filterIncidents();
+}
+
 function sortIncidents() {
-  if (incidents.value) {
-    sortedIncidents.value = incidents.value.slice().sort(function (a, b) {
+  if (incidents) {
+    sortedIncidents.value = incidents.slice().sort(function (a, b) {
       return a.created_date < b.created_date ? 1 : -1;
     });
   }
 }
 
 function filterIncidents() {
+  sortIncidents();
   if (locationFilter.value && statusFilter.value && severityFilter.value) {
     sortedIncidents.value = sortedIncidents.value?.filter(
       (el) =>
@@ -72,7 +91,7 @@ function filterIncidents() {
   }
 }
 
-function filterItems(arr: tIncidentReport[] | undefined, query: string) {
+function filterItems(arr: IncidentReport[] | undefined, query: string) {
   return arr?.filter((el) => el.location.toLowerCase() == query.toLowerCase());
 }
 
@@ -102,23 +121,35 @@ function getLists() {
 }
 
 onMounted(() => {
+  locationFilter.value = "";
+  severityFilter.value = "";
+  statusFilter.value = "";
   getLists();
   getIncidents();
 });
 
 function getIncidents() {
-  axios({
-    method: "get",
-    url: "http://localhost:3000/api/incidents",
-    responseType: "stream",
-  })
-    .then(function (response) {
+  if (listState.showAll) {
+    axios({
+      method: "get",
+      url: "http://localhost:3000/api/incidents",
+      responseType: "stream",
+    }).then(function (response) {
       let obj = JSON.parse(response.data);
-      incidents.value = obj.DATA;
-    })
-    .then(function () {
+      incidents = obj.DATA;
       sortIncidents();
     });
+  } else {
+    axios({
+      method: "get",
+      url: `http://localhost:3000/api/incidents/byuser/${store.fullName}`,
+      responseType: "stream",
+    }).then(function (response) {
+      let obj = JSON.parse(response.data);
+      incidents = obj;
+      sortIncidents();
+    });
+  }
 }
 
 function gotoEdit(incidentId: String | undefined) {
@@ -140,11 +171,11 @@ function formatDateTime(dateString: string | Date) {
 </script>
 <template>
   <div class="container">
-    <div class="row mt-2">
+    <div class="row mt-2 border">
       <div
         class="col-md-2 p-2 mt-1 d-flex align-items-center justify-content-center"
       >
-        <strong>Current Incident Reports</strong>
+        <strong>Incident Reports</strong>
       </div>
       <div class="col-md-8 p-2 mt-1">
         <form class="row">
@@ -197,6 +228,24 @@ function formatDateTime(dateString: string | Date) {
         </button>
       </div>
     </div>
+
+    <div class="row mt-2 p-2 border justify-content-end">
+      <div class="col">
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="chkAllIncidents"
+            v-model="listState.showAll"
+            v-on:change="filterIncidentsByCurrentUser"
+          />
+          <label class="form-check-label" for="chkAllIncidents">{{
+            listState.incidentLabel
+          }}</label>
+        </div>
+      </div>
+    </div>
+
     <div class="row mt-2">
       <div class="col-md-12">
         <table class="table table-bordered">
@@ -209,6 +258,7 @@ function formatDateTime(dateString: string | Date) {
               <th>Reported By</th>
               <th>Status</th>
               <th>Severity</th>
+              <th>Assigned To</th>
               <th class="text-center"></th>
             </tr>
           </thead>
@@ -233,6 +283,7 @@ function formatDateTime(dateString: string | Date) {
               <td class="align-middle">{{ itm.reporting_party }}</td>
               <td class="align-middle">{{ itm.status }}</td>
               <td class="align-middle">{{ itm.severity }}</td>
+              <td class="align-middle">{{ itm.assigned_to }}</td>
               <td class="text-center align-middle">
                 <div class="btn-group">
                   <button type="button" class="btn btn-sm btn-outline-success">

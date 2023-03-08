@@ -3,10 +3,10 @@ import { ref, onMounted, computed } from "vue";
 import type { tPersonRole } from "../models/tPersonRole";
 import FormValidate from "../components/controls/FormValidate.vue";
 import {
-  getItemList,
-  getItem,
-  createItem,
-  updateItem,
+  getRoleList,
+  getRoleItem,
+  createRoleItem,
+  updateRoleItem,
 } from "../services/personRoleService";
 
 const itemList = ref<Array<tPersonRole>>();
@@ -25,6 +25,7 @@ const newItem: tPersonRole = {
   _id: "",
   name: "",
   is_deleted: false,
+  display_order: 0,
 };
 
 let item = ref<tPersonRole>(newItem);
@@ -36,7 +37,7 @@ onMounted(() => {
 
 function getAnItem(id: String | undefined) {
   loading.value = true;
-  getItem(id).then((result) => {
+  getRoleItem(id).then((result) => {
     item.value = result.DATA;
     enableCancel.value = true;
   });
@@ -44,9 +45,8 @@ function getAnItem(id: String | undefined) {
 }
 
 function getAllItems() {
-  console.log("component, get all items");
   loading.value = true;
-  getItemList().then((result) => {
+  getRoleList().then((result) => {
     itemList.value = result.DATA;
   });
   loading.value = false;
@@ -69,17 +69,15 @@ function newUnit() {
 function handleSubmit(event: Event) {
   if (editpage.value.validatepage()) {
     if (item.value._id == "") {
-      createItem(item.value).then((response) => {
+      createRoleItem(item.value).then((response) => {
         cancelEdit();
         getAllItems();
       });
     } else {
-      var data = updateItem(item.value._id, item.value).then((response) => {
+      var data = updateRoleItem(item.value._id, item.value).then((response) => {
         cancelEdit();
         getAllItems();
       });
-
-      console.log("update response: ", data);
     }
   }
 }

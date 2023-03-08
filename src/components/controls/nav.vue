@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import { logOutUser } from "../../services/loginService";
 import router from "../../router/index";
-import { ref } from "vue";
+import { ref, reactive, watch } from "vue";
+import { store } from "../../services/store";
 
 const logOut = function () {
   logOutUser();
   router.push("/login");
 };
 
-var isLoggedIn = ref<boolean>(localStorage.getItem("isLoggedIn") == "true");
-var isAdmin = ref<boolean>(localStorage.getItem("isAdmin") == "true");
-var userName = ref<string>(localStorage.getItem("userName") ?? "");
+var isLoggedIn = store.isLoggedIn as Boolean;
+var isAdmin = store.isAdmin as Boolean;
+var userName = store.userName as String;
+
+watch(store, () => {
+  isLoggedIn = reactive(store.isLoggedIn as Boolean);
+  isAdmin = reactive(store.isAdmin as Boolean);
+  userName = reactive(store.userName as String);
+});
+
+const myConst = store;
 </script>
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -29,20 +38,12 @@ var userName = ref<string>(localStorage.getItem("userName") ?? "");
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item" v-if="isLoggedIn">
-            <RouterLink to="/incidents" class="nav-link"
-              >Current Incidents</RouterLink
-            >
+          <li class="nav-item" v-if="store.isLoggedIn">
+            <RouterLink to="/incidents" class="nav-link">Incidents</RouterLink>
           </li>
-          <li class="nav-item" v-if="isLoggedIn">
-            <RouterLink to="/incidents" class="nav-link"
-              >All Incidents</RouterLink
-            >
-          </li>
-          <li class="nav-item dropdown" v-if="isAdmin">
+          <li class="nav-item dropdown" v-if="store.isAdmin">
             <a
               class="nav-link dropdown-toggle"
-              href="#"
               role="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -66,8 +67,8 @@ var userName = ref<string>(localStorage.getItem("userName") ?? "");
                 >
               </li>
               <li>
-                <RouterLink to="/admin/managepersonclass" class="dropdown-item"
-                  >Manage Person Classes</RouterLink
+                <router-link to="/admin/managepersonclass" class="dropdown-item"
+                  >Manage Person Classes</router-link
                 >
               </li>
               <li>
@@ -75,17 +76,31 @@ var userName = ref<string>(localStorage.getItem("userName") ?? "");
                   >Manage Person Roles</RouterLink
                 >
               </li>
+              <li>
+                <RouterLink
+                  to="/admin/managetreatmenttype"
+                  class="dropdown-item"
+                  >Manage Treatment Types</RouterLink
+                >
+              </li>
+              <li>
+                <RouterLink to="/admin/users" class="dropdown-item"
+                  >Manage System Users</RouterLink
+                >
+              </li>
             </ul>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <span class="navbar-text" v-if="isLoggedIn"
-            >Welcome "{{ userName }}"</span
+          <span class="navbar-text" v-if="store.isLoggedIn"
+            >Welcome {{ store.fullName }}</span
           >
-          <li class="nav-item" v-if="isLoggedIn">
-            <a href="#" class="nav-link" @click="logOut">Log Out</a>
+          <li class="nav-item" v-if="store.isLoggedIn">
+            <a href="#" class="nav-link text-primary" @click="logOut"
+              >Log Out</a
+            >
           </li>
-          <li class="nav-item" v-if="!isLoggedIn">
+          <li class="nav-item" v-if="!store.isLoggedIn">
             <RouterLink to="/login" class="nav-link">Log In</RouterLink>
           </li>
         </ul>

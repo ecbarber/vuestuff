@@ -1,4 +1,4 @@
-import type { tIncidentReport } from "@/models/tIncidentReport";
+import type { iIncidentReport, IncidentReport } from "@/models/IncidentReport";
 import type { tPerson } from "@/models/tPerson";
 
 import axios from "axios";
@@ -13,29 +13,50 @@ export async function getAllIncidents(): Promise<any> {
   return returnList;
 }
 
-export async function getIncident(id: String | undefined): Promise<any> {
-  let returnItem = {};
-  await axios.get(`${store.apiUrl}/incident/${id}`).then((response) => {
-    returnItem = response.data;
-  });
-  return returnItem;
+export async function getIncidentPersons(incidentId: string): Promise<any> {
+  let returnList = {};
+  await axios
+    .get(`${store.apiUrl}/incidents/persons/byincident/${incidentId}`)
+    .then((response) => {
+      returnList = response.data;
+    })
+    .catch((error) => {
+      return error;
+    });
+  return returnList;
 }
 
-export async function createIncident(incident: tIncidentReport): Promise<any> {
-  let returnItem = {};
-  incident.created_by = store.userName;
-  incident.created_date = fixDate(new Date());
-  incident.lastupdated_by = store.userName;
-  incident.lastupdated_date = fixDate(new Date());
-  await axios.post(`${store.apiUrl}/incident`, incident).then((response) => {
-    returnItem = response.data;
+export async function getIncident(
+  id: String | undefined
+): Promise<iIncidentReport> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`${store.apiUrl}/incident/${id}`)
+      .then((response) => {
+        resolve(response.data as iIncidentReport);
+      })
+      .catch((err) => {
+        reject(err);
+      });
   });
-  return returnItem;
+}
+
+export async function createIncident(incident: IncidentReport): Promise<any> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(`${store.apiUrl}/incident`, incident)
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
 }
 
 export async function updateIncident(
   id: String | undefined,
-  incident: tIncidentReport
+  incident: IncidentReport
 ): Promise<any> {
   let returnItem = {};
   incident.lastupdated_by = store.userName;
@@ -52,9 +73,8 @@ export async function updatePerson(
   incidentId: String | undefined,
   person: tPerson
 ): Promise<any> {
-  console.log("inside incident service, update person:", person);
   let returnItem = {};
-  await axios
+  axios
     .put(`${store.apiUrl}/incident/${incidentId}/updateperson`, person)
     .then((response) => {
       returnItem = response.data;
@@ -66,16 +86,13 @@ export async function createPerson(
   incidentId: String | undefined,
   person: tPerson
 ): Promise<any> {
-  console.log("inside incident service, create person:", person);
-  let returnItem = {};
-  await axios
+  axios
     .post(`${store.apiUrl}/incident/${incidentId}/addperson`, person)
     .then((response) => {
-      returnItem = response.data;
+      return response.data;
     });
-  return returnItem;
 }
 
 function fixDate(theDate: Date) {
-  return dayjs(theDate.toString()).format("YYYY-MM-DDTHH:mm") as String;
+  return dayjs(theDate.toString()).format("YYYY-MM-DDTHH:mm") as string;
 }

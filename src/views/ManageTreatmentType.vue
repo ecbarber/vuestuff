@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import type { tPersonClass } from "../models/tPersonClass";
+import type { tTreatmentType } from "../models/tTreatmentType";
 import FormValidate from "../components/controls/FormValidate.vue";
 import {
-  getItemList,
-  getItem,
-  createItem,
-  updateItem,
-} from "../services/personClassService";
+  getTreatmentTypeList,
+  getTreatmentTypeItem,
+  createTreatmentTypeItem,
+  updateTreatmentTypeItem,
+} from "../services/treatmentTypeService";
 
-const itemList = ref<Array<tPersonClass>>();
+const itemList = ref<Array<tTreatmentType>>();
 
 const filteredItems = computed(() => {
   const qry: string = filterString.value.toString();
@@ -21,14 +21,13 @@ let loading = ref<boolean>(false);
 let isNewItem = ref<boolean>(false);
 let filterString = ref<String>("");
 
-const newItem: tPersonClass = {
+const newItem: tTreatmentType = {
   _id: "",
   name: "",
   is_deleted: false,
-  display_order: 0,
 };
 
-let item = ref<tPersonClass>(newItem);
+let item = ref<tTreatmentType>(newItem);
 const editpage = ref();
 
 onMounted(() => {
@@ -37,7 +36,7 @@ onMounted(() => {
 
 function getAnItem(id: String | undefined) {
   loading.value = true;
-  getItem(id).then((result) => {
+  getTreatmentTypeItem(id).then((result) => {
     item.value = result.DATA;
     enableCancel.value = true;
   });
@@ -46,7 +45,7 @@ function getAnItem(id: String | undefined) {
 
 function getAllItems() {
   loading.value = true;
-  getItemList().then((result) => {
+  getTreatmentTypeList().then((result) => {
     itemList.value = result.DATA;
   });
   loading.value = false;
@@ -61,7 +60,7 @@ function cancelEdit() {
 }
 
 function newUnit() {
-  let sev = ref<tPersonClass>(newItem);
+  let sev = ref<tTreatmentType>(newItem);
   isNewItem.value = true;
   enableCancel.value = true;
 }
@@ -69,20 +68,22 @@ function newUnit() {
 function handleSubmit(event: Event) {
   if (editpage.value.validatepage()) {
     if (item.value._id == "") {
-      createItem(item.value).then((response) => {
+      createTreatmentTypeItem(item.value).then((response) => {
         cancelEdit();
         getAllItems();
       });
     } else {
-      var data = updateItem(item.value._id, item.value).then((response) => {
-        cancelEdit();
-        getAllItems();
-      });
+      var data = updateTreatmentTypeItem(item.value._id, item.value).then(
+        (response) => {
+          cancelEdit();
+          getAllItems();
+        }
+      );
     }
   }
 }
 
-function filterItems(arr: tPersonClass[] | undefined, query: string) {
+function filterItems(arr: tTreatmentType[] | undefined, query: string) {
   return arr?.filter((el) =>
     el.name.toLowerCase().includes(query.toLowerCase())
   );
@@ -139,7 +140,7 @@ function clearFilter() {
           <template #body>
             <div class="row align-items-center">
               <div class="col">
-                <h4>Edit Person Classes</h4>
+                <h4>Edit Treatment Types</h4>
               </div>
               <div class="col">
                 <button
@@ -147,18 +148,18 @@ function clearFilter() {
                   :disabled="enableCancel"
                   @click.prevent="newUnit"
                 >
-                  New Person Class
+                  New Treatment Type
                 </button>
               </div>
             </div>
             <div class="row">
               <div class="col">
-                <label class="form-label">Person Class Id</label>
+                <label class="form-label">Treatment Type Id</label>
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Location Id"
-                  aria-label="Location Id"
+                  placeholder="Treatment Type Id"
+                  aria-label="Treatment Type Id"
                   v-model="item._id"
                   required
                   disabled
@@ -167,33 +168,17 @@ function clearFilter() {
             </div>
             <div class="row">
               <div class="col">
-                <label class="form-label">Person Class Description</label>
+                <label class="form-label">Treatment Type Description</label>
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Location Name"
-                  aria-label="Location Name"
+                  aria-label="Treatment Type Name"
                   v-model="item.name"
                   required
                   :disabled="!isNewItem && !enableCancel"
                 />
               </div>
             </div>
-            <div class="row">
-              <div class="col">
-                <label class="form-label">Display Order</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  placeholder="Display Order"
-                  aria-label="Display Order"
-                  v-model="item.display_order"
-                  required
-                  :disabled="!isNewItem && !enableCancel"
-                />
-              </div>
-            </div>
-
             <div class="row">
               <div class="col">
                 <div class="form-check mt-2">

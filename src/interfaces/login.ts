@@ -8,4 +8,5 @@ export interface iLoginResponse {
   passWord: string;
   success: boolean;
   message: string;
+  fullName: string;
 }

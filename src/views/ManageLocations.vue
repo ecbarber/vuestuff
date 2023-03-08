@@ -61,7 +61,6 @@ function cancelEdit() {
 }
 
 function newUnit() {
-  console.log("Entering NEW ITEM mode...");
   let location = ref<tLocation>(newLocation);
   newItem.value = true;
   enableCancel.value = true;
@@ -81,8 +80,6 @@ function handleSubmit(event: Event) {
           getLocations();
         }
       );
-
-      console.log("update response: ", data);
     }
   }
 }

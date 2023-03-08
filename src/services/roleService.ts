@@ -1,10 +1,10 @@
-import type { tPersonRole } from "@/models/tPersonRole";
+import type { Role } from "@/models/Role";
 import axios from "axios";
 import { store } from "../services/store";
 
-export async function getRoleList(): Promise<any> {
+export async function getList(): Promise<any> {
   let returnList = {};
-  await axios.get(`${store.apiUrl}/personroles`).then((response) => {
+  await axios.get(`${store.apiUrl}/roles`).then((response) => {
     returnList = response.data;
   });
   return returnList;
@@ -12,15 +12,15 @@ export async function getRoleList(): Promise<any> {
 
 export async function getRoleItem(id: String | undefined): Promise<any> {
   let returnItem = {};
-  await axios.get(`${store.apiUrl}/personrole/${id}`).then((response) => {
+  await axios.get(`${store.apiUrl}/role/${id}`).then((response) => {
     returnItem = response.data;
   });
   return returnItem;
 }
 
-export async function createRoleItem(item: tPersonRole): Promise<any> {
+export async function createRoleItem(item: Role): Promise<any> {
   let returnItem = {};
-  await axios.post(`${store.apiUrl}/personrole`, item).then((response) => {
+  await axios.post(`${store.apiUrl}/role`, item).then((response) => {
     returnItem = response.data;
   });
   return returnItem;
@@ -28,10 +28,10 @@ export async function createRoleItem(item: tPersonRole): Promise<any> {
 
 export async function updateRoleItem(
   id: String | undefined,
-  item: tPersonRole
+  item: Role
 ): Promise<any> {
   let returnItem = {};
-  await axios.put(`${store.apiUrl}/personrole/${id}`, item).then((response) => {
+  await axios.put(`${store.apiUrl}/role/${id}`, item).then((response) => {
     returnItem = response.data;
   });
   return returnItem;

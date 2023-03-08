@@ -25,6 +25,7 @@ const newItem: tSeverity = {
   _id: "",
   name: "",
   is_deleted: false,
+  display_order: 0,
 };
 
 let item = ref<tSeverity>(newItem);
@@ -77,8 +78,6 @@ function handleSubmit(event: Event) {
         cancelEdit();
         getAllItems();
       });
-
-      console.log("update response: ", data);
     }
   }
 }
@@ -175,6 +174,20 @@ function clearFilter() {
                   placeholder="Location Name"
                   aria-label="Location Name"
                   v-model="item.name"
+                  required
+                  :disabled="!isNewItem && !enableCancel"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <label class="form-label">Display Order</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  placeholder="Display Order"
+                  aria-label="Display Order"
+                  v-model="item.display_order"
                   required
                   :disabled="!isNewItem && !enableCancel"
                 />

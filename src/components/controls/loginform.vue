@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import textbox from "./textbox.vue";
 import FormValidate from "./FormValidate.vue";
 import type { iLogin, iLoginResponse } from "../../interfaces/login";
@@ -25,16 +25,16 @@ const loginModel = ref<iLogin>({
   passWord: "",
 });
 
-let response: iLoginResponse = {
+var response = reactive({
   userName: "",
   passWord: "",
   success: false,
   message: "",
-};
+});
 
-function handleSubmit(event: Event) {
+async function handleSubmit(event: Event) {
   if (loginpage.value.validatepage()) {
-    response = loginUser(loginModel.value);
+    response = await loginUser(loginModel.value);
     if (response.success) {
       router.push("/");
     }
