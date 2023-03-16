@@ -6,6 +6,7 @@ import { useRoute } from "vue-router";
 import router from "../router/index";
 import FormValidate from "../components/controls/FormValidate.vue";
 import PersonEditor from "@/components/controls/PersonEditor.vue";
+import AddFiles from "@/components/controls/AddFiles.vue";
 import { MetaStore } from "@/services/metaStore";
 import { store } from "@/services/store";
 import {
@@ -37,6 +38,7 @@ if (!incidentId) {
   pageLabel = "New Incident";
   incident.isLoading = true;
   incident.reporting_party = store.fullName;
+  incident.assigned_to = store.fullName;
   incident.reporting_party_email = store.email;
   incident.location = store.home_location;
   incident.isLoading = false;
@@ -381,6 +383,17 @@ onMounted(() => {});
           </div>
           <div class="row mt-3" v-if="incidentId != ''">
             <div class="col">
+              <AddFiles
+                newButtonText="Add a File"
+                titleText="Images / Documents"
+                sub-title-text="Add documents, images and files that are relevant to this incident."
+                ref="personEditor"
+                v-bind:incident-id="(incidentId as string)"
+              ></AddFiles>
+            </div>
+          </div>
+          <div class="row mt-3" v-if="incidentId != ''">
+            <div class="col">
               <PersonEditor
                 newButtonText="New Subject"
                 titleText="Witnesses / Subjects / Parties"
@@ -393,7 +406,9 @@ onMounted(() => {});
               ></PersonEditor>
             </div>
           </div>
-          <div class="row mt-3 justify-content-center">
+          <div
+            class="row mt-3 justify-content-center d-flex align-items-center"
+          >
             <div class="col-6 text-center">
               <button
                 type="reset"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, reactive } from "vue";
 import type { tPersonRole } from "../models/tPersonRole";
 import FormValidate from "../components/controls/FormValidate.vue";
 import {
@@ -9,17 +9,26 @@ import {
   updateRoleItem,
 } from "../services/personRoleService";
 
-const itemList = ref<Array<tPersonRole>>();
-
-const filteredItems = computed(() => {
-  const qry: string = filterString.value.toString();
-  return filterItems(itemList.value, qry);
+var pageState = reactive({
+  enableCancel: false,
+  loading: false,
+  isNewItem: false,
+  filterString: "",
 });
 
-let enableCancel = ref<boolean>(false);
-let loading = ref<boolean>(false);
-let isNewItem = ref<boolean>(false);
-let filterString = ref<String>("");
+var itemList = new Array<tPersonRole>();
+
+function getAllItems() {
+  pageState.loading = true;
+  getRoleList().then((result) => {
+    itemList = result.DATA;
+  });
+  pageState.loading = false;
+}
+
+const filteredItems = computed(() => {
+  return filterItems(itemList, pageState.filterString);
+});
 
 const newItem: tPersonRole = {
   _id: "",
@@ -28,7 +37,8 @@ const newItem: tPersonRole = {
   display_order: 0,
 };
 
-let item = ref<tPersonRole>(newItem);
+let item = reactive<tPersonRole>(newItem);
+
 const editpage = ref();
 
 onMounted(() => {
@@ -36,45 +46,38 @@ onMounted(() => {
 });
 
 function getAnItem(id: String | undefined) {
-  loading.value = true;
+  pageState.loading = true;
   getRoleItem(id).then((result) => {
-    item.value = result.DATA;
-    enableCancel.value = true;
+    item = reactive(result.DATA);
+    pageState.enableCancel = true;
   });
-  loading.value = false;
-}
-
-function getAllItems() {
-  loading.value = true;
-  getRoleList().then((result) => {
-    itemList.value = result.DATA;
-  });
-  loading.value = false;
+  pageState.loading = false;
 }
 
 function cancelEdit() {
-  item.value._id = "";
-  item.value.name = "";
-  item.value.is_deleted = false;
-  enableCancel.value = false;
-  isNewItem.value = false;
+  item._id = "";
+  item.name = "";
+  item.is_deleted = false;
+  item.display_order = 0;
+  pageState.enableCancel = false;
+  pageState.isNewItem = false;
 }
 
 function newUnit() {
   let sev = ref<tPersonRole>(newItem);
-  isNewItem.value = true;
-  enableCancel.value = true;
+  pageState.isNewItem = true;
+  pageState.enableCancel = true;
 }
 
 function handleSubmit(event: Event) {
   if (editpage.value.validatepage()) {
-    if (item.value._id == "") {
-      createRoleItem(item.value).then((response) => {
+    if (item._id == "") {
+      createRoleItem(item).then((response) => {
         cancelEdit();
         getAllItems();
       });
     } else {
-      var data = updateRoleItem(item.value._id, item.value).then((response) => {
+      var data = updateRoleItem(item._id, item).then((response) => {
         cancelEdit();
         getAllItems();
       });
@@ -82,21 +85,21 @@ function handleSubmit(event: Event) {
   }
 }
 
-function filterItems(arr: tPersonRole[] | undefined, query: string) {
+function filterItems(arr: Array<tPersonRole> | undefined, query: string) {
   return arr?.filter((el) =>
     el.name.toLowerCase().includes(query.toLowerCase())
   );
 }
 
 function clearFilter() {
-  filterString.value = "";
+  pageState.filterString = "";
 }
 </script>
 <template v-cloak>
   <div class="container-fluid m-4 p-4">
     <div class="row justify-content-center">
       <div class="col-8">
-        <div class="alert alert-info text-center" v-if="loading">
+        <div class="alert alert-info text-center" v-if="pageState.loading">
           Loading...
         </div>
       </div>
@@ -108,7 +111,11 @@ function clearFilter() {
             <label class="control-label float-end">Filter Items:</label>
           </div>
           <div class="col-5 mt-2">
-            <input class="form-control" type="text" v-model="filterString" />
+            <input
+              class="form-control"
+              type="text"
+              v-model="pageState.filterString"
+            />
           </div>
           <div class="col-3 mt-2">
             <button
@@ -120,10 +127,7 @@ function clearFilter() {
           </div>
         </div>
         <div class="row mt-3">
-          <div
-            class="col-md-3 col-sm-12 d-grid gap-2"
-            v-for="itm in filteredItems"
-          >
+          <div class="col-md-3 col-sm-12 d-grid gap-2" v-for="itm in itemList">
             <button
               class="btn btn-outline-success btn-lg mt-1"
               @click="getAnItem(itm._id)"
@@ -144,7 +148,7 @@ function clearFilter() {
               <div class="col">
                 <button
                   class="btn btn-success"
-                  :disabled="enableCancel"
+                  :disabled="pageState.enableCancel"
                   @click.prevent="newUnit"
                 >
                   New Person Role
@@ -175,10 +179,25 @@ function clearFilter() {
                   aria-label="Location Name"
                   v-model="item.name"
                   required
-                  :disabled="!isNewItem && !enableCancel"
+                  :disabled="!pageState.isNewItem && !pageState.enableCancel"
                 />
               </div>
             </div>
+            <div class="row">
+              <div class="col">
+                <label class="form-label">Display Order</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  placeholder="Display Order"
+                  aria-label="Display Order"
+                  v-model="item.display_order"
+                  required
+                  :disabled="!pageState.isNewItem && !pageState.enableCancel"
+                />
+              </div>
+            </div>
+
             <div class="row">
               <div class="col">
                 <div class="form-check mt-2">
@@ -187,7 +206,7 @@ function clearFilter() {
                     type="checkbox"
                     id="flexCheckDefault"
                     :value="item.is_deleted"
-                    :disabled="!newItem && !enableCancel"
+                    :disabled="!pageState.isNewItem && !pageState.enableCancel"
                   />
                   <label class="form-check-label" for="flexCheckDefault">
                     Deleted?
@@ -199,14 +218,14 @@ function clearFilter() {
               <div class="col-8">
                 <button
                   class="btn btn-outline-dark m-1 btn-width"
-                  :disabled="!enableCancel"
+                  :disabled="!pageState.enableCancel"
                   @click.prevent="cancelEdit"
                 >
                   Cancel
                 </button>
                 <button
                   class="btn btn-outline-primary m-1 btn-width"
-                  :disabled="!enableCancel"
+                  :disabled="!pageState.enableCancel"
                   @click.prevent="handleSubmit"
                 >
                   Save

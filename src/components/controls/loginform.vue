@@ -47,12 +47,12 @@ async function handleSubmit(event: Event) {
       <div :class="class">
         <div class="row mt-3">
           <div class="col d-flex justify-content-center">
-            <h3>{{ Title }}</h3>
+            <h4>{{ Title }}</h4>
           </div>
         </div>
         <div class="row">
-          <div class="col-md-3"></div>
-          <div class="col-md-6">
+          <div class="col-md-4"></div>
+          <div class="col-md-4">
             <textbox
               input-type="text"
               id="txtUserName"
@@ -62,11 +62,11 @@ async function handleSubmit(event: Event) {
               min-length="4"
             ></textbox>
           </div>
-          <div class="col-md-3"></div>
+          <div class="col-md-4"></div>
         </div>
         <div class="row">
-          <div class="col-md-3"></div>
-          <div class="col-md-6">
+          <div class="col-md-4"></div>
+          <div class="col-md-4">
             <textbox
               input-type="password"
               id="txtPassword"

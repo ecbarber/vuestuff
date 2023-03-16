@@ -130,25 +130,19 @@ onMounted(() => {
 
 function getIncidents() {
   if (listState.showAll) {
-    axios({
-      method: "get",
-      url: "http://localhost:3000/api/incidents",
-      responseType: "stream",
-    }).then(function (response) {
-      let obj = JSON.parse(response.data);
-      incidents = obj.DATA;
+    axios.get(`${store.apiUrl}/incidents`).then((response) => {
+      incidents = response.data;
       sortIncidents();
     });
   } else {
-    axios({
-      method: "get",
-      url: `http://localhost:3000/api/incidents/byuser/${store.fullName}`,
-      responseType: "stream",
-    }).then(function (response) {
-      let obj = JSON.parse(response.data);
-      incidents = obj;
-      sortIncidents();
-    });
+    axios
+      .get(
+        `${store.apiUrl}/incidents/foruser/${store.fullName}/${store.home_location}`
+      )
+      .then((response) => {
+        incidents = response.data;
+        sortIncidents();
+      });
   }
 }
 
@@ -170,7 +164,7 @@ function formatDateTime(dateString: string | Date) {
 }
 </script>
 <template>
-  <div class="container">
+  <div class="container-fluid">
     <div class="row mt-2 border">
       <div
         class="col-md-2 p-2 mt-1 d-flex align-items-center justify-content-center"
@@ -229,7 +223,7 @@ function formatDateTime(dateString: string | Date) {
       </div>
     </div>
 
-    <div class="row mt-2 p-2 border justify-content-end">
+    <div class="row mt-2 pt-2 pb-2 border justify-content-end">
       <div class="col">
         <div class="form-check form-switch">
           <input

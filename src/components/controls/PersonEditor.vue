@@ -81,9 +81,9 @@ const filteredPersonsList = computed(() => {
 
 function showEdit(personInstance: tPerson | undefined) {
   if (personInstance?._id) {
-    currentPerson = personInstance;
+    currentPerson = reactive(personInstance);
   } else {
-    currentPerson = new Person();
+    currentPerson = reactive(new Person());
   }
   editModal.value.showMe(true);
 }
@@ -347,8 +347,8 @@ async function refreshList() {
               </div>
             </div>
 
-            <div class="row mt-1 border rounded ms-1 me-1 p-1">
-              <div class="col-1">
+            <div class="row ms-1 me-1 p-3 align-items-center">
+              <div class="col-2">
                 <strong class="ms-2 align-middle">Class:</strong>
               </div>
               <div class="col">
@@ -369,7 +369,26 @@ async function refreshList() {
                 </div>
               </div>
             </div>
-            <div class="row mt-1" v-if="currentPerson.person_class == 'Other'">
+            <div class="row">
+              <div class="col">
+                <div
+                  class="form-floating mb-1"
+                  v-if="currentPerson.person_class == 'Entertainer'"
+                >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Stage Name"
+                    aria-label="Stage Name"
+                    v-model="currentPerson.stage_name"
+                    required
+                  />
+                  <label>Stage Name</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" v-if="currentPerson.person_class == 'Other'">
               <div class="col">
                 <div class="form-floating mt-1">
                   <input
@@ -381,8 +400,8 @@ async function refreshList() {
                 </div>
               </div>
             </div>
-            <div class="row mt-1 border rounded ms-1 me-1 p-1">
-              <div class="col-1">
+            <div class="row mt-1 ms-1 me-1 p-3 align-items-center">
+              <div class="col-2">
                 <strong class="ms-2 align-middle">Role:</strong>
               </div>
               <div class="col">
@@ -412,25 +431,6 @@ async function refreshList() {
                     v-model="currentPerson.person_role_other"
                   />
                   <label class="form-label" for="selStatus">Other Role</label>
-                </div>
-              </div>
-            </div>
-
-            <div class="row mt-1">
-              <div class="col">
-                <div
-                  class="form-floating mb-1"
-                  v-if="currentPerson.person_class == 'Entertainer'"
-                >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Stage Name"
-                    aria-label="Stage Name"
-                    v-model="currentPerson.stage_name"
-                    required
-                  />
-                  <label>Stage Name</label>
                 </div>
               </div>
             </div>
